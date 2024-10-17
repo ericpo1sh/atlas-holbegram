@@ -11,11 +11,6 @@ interface PasswordInputProps {
   setPassword: (password: string) => void;
 }
 
-interface NameInputProps {
-  name: string;
-  setName: (password: string) => void;
-}
-
 export const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail }) => {
   return (
     <View style={styles.inputContainer}>
@@ -26,21 +21,7 @@ export const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail }) => {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-      />
-    </View>
-  );
-};
-
-export const NameInput: React.FC<NameInputProps> = ({ name, setName }) => {
-  return (
-    <View style={styles.inputContainer}>
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        value={name}
-        onChangeText={setName}
-        keyboardType="default"
-        autoCapitalize="words"
+        placeholderTextColor="#FFFFFF"
       />
     </View>
   );
@@ -56,6 +37,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({ password, setPassw
         onChangeText={setPassword}
         secureTextEntry
         autoCapitalize="none"
+        placeholderTextColor="#FFFFFF"
       />
     </View>
   );
@@ -68,10 +50,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#1DD2AF',
     padding: 10,
     borderRadius: 5,
     width: '100%',
-    backgroundColor: '#F0F0F0'
+    backgroundColor: '#00003C',
+    color: 'white'
   },
 });

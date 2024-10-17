@@ -16,18 +16,20 @@ export default function Page() {
   const router = useRouter()
 
   async function login() {
+    setLoading(true);
     try {
       await auth.login(email, password);
       router.replace('/(tabs)');
     } catch(err) {
       alert('Email or password is incorrect')
     }
+    setLoading(false);
   }
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: '#00003C' }}>
       <Logo/>
-      <Text style={{  fontSize: 28, textAlign: 'center', fontFamily: 'Poppins' }}>Login</Text>
+      <Text style={{  fontSize: 28, textAlign: 'center', fontFamily: 'Poppins', color: 'white'}}>Login</Text>
       <EmailInput email={email} setEmail={setEmail}/>
       <PasswordInput password={password} setPassword={setPassword}/>
       <SignInButton onPress={login}/>

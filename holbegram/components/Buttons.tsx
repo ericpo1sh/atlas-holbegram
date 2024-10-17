@@ -19,7 +19,7 @@ export const CreateNewAccountLink: React.FC = () => {
 
   return (
     <Pressable onPress={() => router.replace('/register')}>
-      <Text>Don't have an account? <Text style={styles.linkText}>Sign Up</Text></Text>
+      <Text style={{ color: 'white' }}>Don't have an account? <Text style={styles.linkText}>Sign Up</Text></Text>
     </Pressable>
   );
 };
@@ -29,7 +29,7 @@ export const SignIntoAccountLink: React.FC = () => {
 
   return (
     <Pressable onPress={() => router.replace('/login')}>
-      <Text>Already have an account? <Text style={styles.linkText}>Sign In</Text></Text>
+      <Text style={{ color: 'white' }}>Already have an account? <Text style={styles.linkText}>Sign In</Text></Text>
     </Pressable>
   );
 };
@@ -42,10 +42,18 @@ export const SignUpButton: React.FC<SignInButtonProps> = ({ onPress }) => {
   );
 };
 
+export const AddPhotoButton: React.FC = () => {
+  return (
+    <Pressable style={styles.button} onPress={onPress}>
+      <Text style={{ color: 'white' }}>Choose a photo</Text>
+    </Pressable>
+  )
+}
+
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#DC3C30',
+    backgroundColor: '#1DD2AF',
     padding: 15,
     borderRadius: 5,
     width: '80%',
@@ -58,7 +66,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   linkText: {
-    color: '#DC3C30',
+    color: '#1DD2AF',
     marginTop: 20,
     cursor: 'pointer',
     fontFamily: 'Poppins'

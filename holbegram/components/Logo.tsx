@@ -5,7 +5,7 @@ export const Logo: React.FC = () => {
   return (
     <View style={styles.logoContainer}>
       <Image
-        source={require('@/assets/images/holberton-logo.webp')}
+        source={require('@/assets/images/logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   logo: {
-    width: 150,
+    width: 200,
     height: 150,
   },
 });

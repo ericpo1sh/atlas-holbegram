@@ -4,7 +4,7 @@ import { View, Text, Pressable } from "react-native";
 import { Loading } from '@/components/Loading';
 import { SignIntoAccountLink, SignUpButton } from '@/components/Buttons';
 import { Logo } from '@/components/Logo';
-import { EmailInput, PasswordInput, NameInput } from '@/components/Inputs';
+import { EmailInput, PasswordInput } from '@/components/Inputs';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'expo-router';
 
@@ -17,20 +17,21 @@ export default function Page() {
   const router = useRouter();
 
   async function login() {
+    setLoading(true);
     try {
       auth.register(email, password)
       router.replace("/(tabs)/")
     } catch (err) {
       alert("Unable to create account")
     }
+    setLoading(false);
   }
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: '#00003C' }}>
       <Logo/>
-      <Text style={{  fontSize: 28, textAlign: 'center', fontFamily: 'Poppins' }}>Register</Text>
+      <Text style={{  fontSize: 28, textAlign: 'center', fontFamily: 'Poppins', color: 'white' }}>Register</Text>
       <EmailInput email={email} setEmail={setEmail}/>
-      <NameInput name={name} setName={setName}/>
       <PasswordInput password={password} setPassword={setPassword}/>
       <SignUpButton onPress={login}/>
       <SignIntoAccountLink/>
