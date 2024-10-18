@@ -11,7 +11,6 @@ export const AddImagePlaceholder: React.FC<AddImagePlaceholderProps> = ({ image 
       <Image
         source={image ? { uri: image } : require('@/assets/images/upload-placeholder.png')}
         style={styles.placeholder}
-        resizeMode="contain"
       />
     </View>
   )

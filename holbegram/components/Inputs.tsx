@@ -11,6 +11,11 @@ interface PasswordInputProps {
   setPassword: (password: string) => void;
 }
 
+interface CaptionInputProps {
+  caption: string
+  setCaption: (password: string) => void;
+}
+
 export const EmailInput: React.FC<EmailInputProps> = ({ email, setEmail }) => {
   return (
     <View style={styles.inputContainer}>
@@ -43,6 +48,21 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({ password, setPassw
   );
 };
 
+export const CaptionInput: React.FC<CaptionInputProps> = ({ caption, setCaption }) => {
+  return (
+    <View style={styles.inputContainer}>
+      <TextInput
+        style={styles.inputLight}
+        placeholder="Add a caption"
+        value={caption}
+        onChangeText={setCaption}
+        autoCapitalize="none"
+        placeholderTextColor="black"
+      />
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
   inputContainer: {
     marginVertical: 10,
@@ -56,5 +76,14 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#00003C',
     color: 'white'
+  },
+  inputLight: {
+    borderWidth: 1,
+    borderColor: '#1DD2AF',
+    padding: 10,
+    borderRadius: 5,
+    width: 300,
+    backgroundColor: '#fff',
+    color: 'black'
   },
 });

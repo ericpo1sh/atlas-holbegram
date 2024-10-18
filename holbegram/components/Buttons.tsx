@@ -12,6 +12,14 @@ interface addPhotoButtonProps {
   onPress: () => void;
 }
 
+interface SaveAddedPhotoButtonProps {
+  onPress: () => void;
+}
+
+interface ResetPhotoButtonProps {
+  onPress: () => void;
+}
+
 export const SignInButton: React.FC<SignInButtonProps> = ({ onPress }) => {
   return (
     <Pressable style={styles.button} onPress={onPress}>
@@ -59,6 +67,26 @@ export const AddPhotoButton: React.FC<addPhotoButtonProps> = ({ onPress }) => {
   )
 }
 
+export const SaveAddedPhotoButton: React.FC<SaveAddedPhotoButtonProps> = ({ onPress }) => {
+  return (
+    <Pressable style={styles.saveAddedPhotoButton} onPress={onPress}>
+      <View style={styles.addPhotoButtonContent}>
+        <Text style={styles.buttonText}>Save Photo</Text>
+      </View>
+    </Pressable>
+  )
+}
+
+export const ResetPhotoButton: React.FC<ResetPhotoButtonProps> = ({ onPress }) => {
+  return (
+    <Pressable style={styles.resetButton} onPress={onPress}>
+      <View style={styles.resetButtonContent}>
+        <Text style={styles.resetButtonText}>Restart</Text>
+      </View>
+    </Pressable>
+  )
+}
+
 
 const styles = StyleSheet.create({
   button: {
@@ -86,6 +114,36 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Poppins'
+  },
+  resetButton: {
+    backgroundColor: '#FFFFFF',
+    padding: 15,
+    borderRadius: 5,
+    borderColor: '#1DD2AF',
+    borderWidth: 1,
+    width: 250,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  resetButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+  resetButtonText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'Poppins'
+  },
+  saveAddedPhotoButton: {
+    backgroundColor: '#1DD2AF',
+    padding: 15,
+    borderRadius: 5,
+    width: 250,
+    alignItems: 'center',
+    marginVertical: 10,
   },
   linkText: {
     color: '#1DD2AF',
