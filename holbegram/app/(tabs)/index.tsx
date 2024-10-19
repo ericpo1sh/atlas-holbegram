@@ -1,71 +1,173 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { useEffect, useRef, useState } from "react";
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, TouchableWithoutFeedback } from "react-native";
+import firestore from "@/lib/firestore";
+import { Loading } from "@/components/Loading";
+import { useAuth } from "@/components/AuthProvider";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { useAuth } from '@/components/AuthProvider';
-
-export default function HomeScreen() {
+export default function PostsPage() {
   const auth = useAuth();
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      const fetchedPosts = await firestore.getPosts();
+      setPosts(fetchedPosts);
+      setLoading(false);
+    }
+
+    fetchPosts();
+  }, []);
+
+  const toggleFavorite = async (post: any) => {
+    // Ensure favorites is defined
+    if (!Array.isArray(favorites)) {
+      console.error("Favorites is not an array:", favorites);
+      return;
+    }
+  
+    const isFav = isFavorite(post);
+    console.log("Toggling favorite for post:", post.id, "Is Favorite:", isFav);
+  
+    try {
+      if (isFav) {
+        setFavorites(favorites.filter(fav => fav.id !== post.id)); // Use id to filter
+        await firestore.removeFavorite(post.id, auth.user?.uid);
+      } else {
+        setFavorites([...favorites, post]); // Add the post directly to favorites
+        await firestore.addFavorite(post.id, auth.user?.uid);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
+  const isFavorite = (post: any) => {
+    return favorites && favorites.some(fav => fav.id === post.id);
+  };
+
+  const handleDoubleTap = (post: any) => {
+    toggleFavorite(post);
+  };
+
+  const lastTapRef = useRef<number | null>(null);
+
+  const handleImagePress = (post: any) => {
+    const now = Date.now();
+    if (lastTapRef.current && now - lastTapRef.current < 300) {
+      handleDoubleTap(post);
+    } else {
+      lastTapRef.current = now;
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome {auth.user?.email}!</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <ScrollView style={{ flex: 1 }}>
+      <View style={styles.greetingContainer}>
+        <Text style={styles.greetingText}>
+          Hello, {auth.user?.email || 'Guest'}!
+        </Text>
+      </View>
+
+      {posts.map((post, index) => (
+        <View key={index} style={styles.postContainer}>
+          <View style={styles.userRow}>
+            <View style={styles.userInfo}>
+              <Ionicons name="person-circle-outline" size={24} color="black" />
+              <Text style={styles.usernameText}>Random User</Text>
+            </View>
+            <Ionicons name="ellipsis-horizontal" size={24} color="black" />
+          </View>
+
+          <TouchableWithoutFeedback onPress={() => handleImagePress(post)}>
+            <Image
+              source={{ uri: post.image }}
+              style={styles.postImage}
+              resizeMode="cover"
+            />
+          </TouchableWithoutFeedback>
+
+          <View style={styles.iconRow}>
+            <View style={styles.iconContainer}>
+              <TouchableOpacity onPress={() => toggleFavorite(post)}>
+                <Ionicons
+                  name={isFavorite(post) ? "heart" : "heart-outline"}
+                  size={24}
+                  color={isFavorite(post) ? "red" : "black"}
+                />
+              </TouchableOpacity>
+              <Ionicons name="chatbubble-outline" size={24} color="black" style={styles.iconSpacing} />
+              <Ionicons name="arrow-up-circle-outline" size={24} color="black" style={styles.iconSpacing} />
+            </View>
+            <Ionicons name="bookmark-outline" size={24} color="black" style={styles.bookmarkIcon} />
+          </View>
+          <Text style={styles.captionText}><Text style={styles.usernameText}>Random User </Text>{post.caption}</Text>
+        </View>
+      ))}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  greetingContainer: {
+    padding: 16,
     alignItems: 'center',
-    gap: 8,
+    backgroundColor: '#f0f0f0', 
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
   },
-  stepContainer: {
-    gap: 8,
+  greetingText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  postContainer: {
+    padding: 8,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+  userRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  usernameText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  postImage: {
+    width: '100%',
+    height: 375,
+    borderRadius: 10,
+  },
+  captionText: {
+    marginTop: 8,
+    fontSize: 16,
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  iconContainer: {
+    flexDirection: 'row',
+  },
+  iconSpacing: {
+    marginLeft: 16,
+  },
+  bookmarkIcon: {
+    marginRight: 8,
   },
 });

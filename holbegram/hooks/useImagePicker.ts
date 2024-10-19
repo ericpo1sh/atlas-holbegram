@@ -3,7 +3,7 @@ import { useState } from "react"
 import * as ImagePicker from 'expo-image-picker'
 
 export function useImagePicker() {
-  const [image, setImage] = useState<string | undefined>(undefined);
+  const [image, setImage] = useState<string | undefined >(undefined);
   const [status, requestPermission] = usePermissions();
 
   async function openImagePicker() {
@@ -25,7 +25,7 @@ export function useImagePicker() {
   }
 
   function reset() {
-    alert('Reset');
+    setImage(undefined);
   }
 
   return { image, openImagePicker, reset }
