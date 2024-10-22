@@ -1,5 +1,5 @@
 import { db } from "@/firebaseConfig";
-import { addDoc, arrayRemove, arrayUnion, collection, doc, getDocs, updateDoc, query, where } from "firebase/firestore";
+import { addDoc, arrayRemove, arrayUnion, collection, doc, getDocs, updateDoc, query, where, getDoc } from "firebase/firestore";
 
 type Post = {
   id?: string;
@@ -45,9 +45,17 @@ async function getFavoritePosts(userId: string) {
   return posts;
 }
 
+async function getUserPosts(userId: string) {
+  const userPostsQuery = query(postsCollection, where('createdBy', '==', userId));
+  const snapshot = await getDocs(userPostsQuery);
+  const userPosts = snapshot.docs.map(doc => doc.data()) as Post[];
+  return userPosts;
+}
+
 export default {
   addPost,
   getPosts,
   toggleFavoritePost,
   getFavoritePosts,
+  getUserPosts,
 };

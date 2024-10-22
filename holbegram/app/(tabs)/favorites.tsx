@@ -12,7 +12,7 @@ export default function FavoritesPage() {
 
   const fetchFavorites = async () => {
     try {
-      const fetchedFavorites = await firestore.getFavoritePosts(auth.user.uid);
+      const fetchedFavorites = await firestore.getFavoritePosts(auth.user?.uid);
       setFavoritePosts(fetchedFavorites);
     } catch (error) {
       console.error("Error fetching favorites:", error);
@@ -25,7 +25,7 @@ export default function FavoritesPage() {
       setLoading(false);
     };
     initialFetch();
-  }, [auth.user.uid]);
+  }, [auth.user?.uid]);
 
   const onRefresh = async () => {
     setRefreshing(true);

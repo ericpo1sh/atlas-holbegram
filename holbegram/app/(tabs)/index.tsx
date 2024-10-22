@@ -43,7 +43,7 @@ export default function PostsPage() {
   const toggleFavorite = async (post: any) => {
     try {
       const isFavorited = isFavorite(post);
-      await firestore.toggleFavoritePost(post.id, auth.user.uid, isFavorited);
+      await firestore.toggleFavoritePost(post.id, auth.user?.uid, isFavorited);
       setFavorites(prevFavorites => 
         isFavorited 
           ? prevFavorites.filter(favId => favId !== post.id) 
