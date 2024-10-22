@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, TouchableWithoutFeedback } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, RefreshControl, Alert } from "react-native";
 import firestore from "@/lib/firestore";
 import { Loading } from "@/components/Loading";
 import { useAuth } from "@/components/AuthProvider";
@@ -9,57 +9,58 @@ export default function PostsPage() {
   const auth = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [lastTap, setLastTap] = useState<number | null>(null);
 
-  useEffect(() => {
-    async function fetchPosts() {
+  const fetchPosts = async () => {
+    try {
       const fetchedPosts = await firestore.getPosts();
       setPosts(fetchedPosts);
-      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
     }
+  };
 
-    fetchPosts();
+  useEffect(() => {
+    const initialFetch = async () => {
+      await fetchPosts();
+      setLoading(false);
+    };
+    initialFetch();
   }, []);
 
-  const toggleFavorite = async (post: any) => {
-    // Ensure favorites is defined
-    if (!Array.isArray(favorites)) {
-      console.error("Favorites is not an array:", favorites);
-      return;
-    }
-  
-    const isFav = isFavorite(post);
-    console.log("Toggling favorite for post:", post.id, "Is Favorite:", isFav);
-  
-    try {
-      if (isFav) {
-        setFavorites(favorites.filter(fav => fav.id !== post.id)); // Use id to filter
-        await firestore.removeFavorite(post.id, auth.user?.uid);
-      } else {
-        setFavorites([...favorites, post]); // Add the post directly to favorites
-        await firestore.addFavorite(post.id, auth.user?.uid);
-      }
-    } catch (error) {
-      console.error("Error toggling favorite:", error);
-    }
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchPosts();
+    setRefreshing(false);
   };
 
   const isFavorite = (post: any) => {
-    return favorites && favorites.some(fav => fav.id === post.id);
+    return favorites.includes(post.id);
+  };
+
+  const toggleFavorite = async (post: any) => {
+    try {
+      const isFavorited = isFavorite(post);
+      await firestore.toggleFavoritePost(post.id, auth.user.uid, isFavorited);
+      setFavorites(prevFavorites => 
+        isFavorited 
+          ? prevFavorites.filter(favId => favId !== post.id) 
+          : [...prevFavorites, post.id]
+      );
+      Alert.alert(isFavorited ? "Removed from favorites" : "Added to favorites");
+    } catch (error) {
+      console.error("Error favoriting post:", error);
+    }
   };
 
   const handleDoubleTap = (post: any) => {
-    toggleFavorite(post);
-  };
-
-  const lastTapRef = useRef<number | null>(null);
-
-  const handleImagePress = (post: any) => {
     const now = Date.now();
-    if (lastTapRef.current && now - lastTapRef.current < 300) {
-      handleDoubleTap(post);
+    if (lastTap && now - lastTap < 300) {
+      toggleFavorite(post);
     } else {
-      lastTapRef.current = now;
+      setLastTap(now);
     }
   };
 
@@ -68,7 +69,12 @@ export default function PostsPage() {
   }
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView
+      style={{ flex: 1 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.greetingContainer}>
         <Text style={styles.greetingText}>
           Hello, {auth.user?.email || 'Guest'}!
@@ -85,7 +91,7 @@ export default function PostsPage() {
             <Ionicons name="ellipsis-horizontal" size={24} color="black" />
           </View>
 
-          <TouchableWithoutFeedback onPress={() => handleImagePress(post)}>
+          <TouchableWithoutFeedback onPress={() => handleDoubleTap(post)}>
             <Image
               source={{ uri: post.image }}
               style={styles.postImage}

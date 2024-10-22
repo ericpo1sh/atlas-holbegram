@@ -1,65 +1,63 @@
 import { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
-import { Loading } from "@/components/Loading";
-import { useAuth } from "@/components/AuthProvider";
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { View, Text, Image, ScrollView, StyleSheet, RefreshControl } from "react-native";
 import firestore from "@/lib/firestore";
+import { useAuth } from "@/components/AuthProvider";
+import { Loading } from "@/components/Loading";
 
 export default function FavoritesPage() {
   const auth = useAuth();
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favoritePosts, setFavoritePosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchFavorites = async () => {
+    try {
+      const fetchedFavorites = await firestore.getFavoritePosts(auth.user.uid);
+      setFavoritePosts(fetchedFavorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      const fetchedPosts = await firestore.getPosts(); // Assuming you fetch all posts
-      const userFavorites = fetchedPosts.filter(post => post.favoritedBy.includes(auth.user?.uid));
-      setFavorites(userFavorites);
+    const initialFetch = async () => {
+      await fetchFavorites();
       setLoading(false);
     };
+    initialFetch();
+  }, [auth.user.uid]);
 
-    fetchFavorites();
-  }, [auth.user]);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchFavorites();
+    setRefreshing(false);
+  };
 
   if (loading) {
     return <Loading />;
   }
 
   return (
-    <ScrollView style={{ flex: 1 }}>
+    <ScrollView
+      style={{ flex: 1 }}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.greetingContainer}>
-        <Text style={styles.greetingText}>
-          Hello, {auth.user?.email || 'Guest'}! Here are your favorite posts:
-        </Text>
+        <Text style={styles.greetingText}>Your Favorites</Text>
       </View>
 
-      {favorites.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No favorites yet!</Text>
+      {favoritePosts.map((post, index) => (
+        <View key={index} style={styles.postContainer}>
+          <Image
+            source={{ uri: post.image }}
+            style={styles.postImage}
+            resizeMode="cover"
+          />
+          <Text style={styles.captionText}><Text style={styles.usernameText}>Random User </Text>{post.caption}</Text>
         </View>
-      ) : (
-        favorites.map((post, index) => (
-          <View key={index} style={styles.postContainer}>
-            <View style={styles.userRow}>
-              <View style={styles.userInfo}>
-                <Ionicons name="person-circle-outline" size={24} color="black" />
-                <Text style={styles.usernameText}>Random User</Text>
-              </View>
-              <Ionicons name="ellipsis-horizontal" size={24} color="black" />
-            </View>
-
-            <TouchableOpacity>
-              <Image
-                source={{ uri: post.image }}
-                style={styles.postImage}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-
-            <Text style={styles.captionText}><Text style={styles.usernameText}>Random User </Text>{post.caption}</Text>
-          </View>
-        ))
-      )}
+      ))}
     </ScrollView>
   );
 }
@@ -68,7 +66,7 @@ const styles = StyleSheet.create({
   greetingContainer: {
     padding: 16,
     alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#f0f0f0', 
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
@@ -81,21 +79,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
-  userRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  usernameText: {
-    marginLeft: 8,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   postImage: {
     width: '100%',
     height: 375,
@@ -105,12 +88,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 16,
   },
-  emptyContainer: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 18,
-    color: 'gray',
+  usernameText: {
+    fontWeight: 'bold',
   },
 });
